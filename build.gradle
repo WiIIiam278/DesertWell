@@ -1,0 +1,53 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+group 'net.william278'
+version '1.0'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.minebench.de/' }
+}
+
+dependencies {
+    compileOnly 'de.themoep:minedown:1.7.1-SNAPSHOT'
+    compileOnly 'org.jetbrains:annotations:23.0.0'
+
+    testImplementation 'de.themoep:minedown:1.7.1-SNAPSHOT'
+    testImplementation 'net.md-5:bungeecord-chat:1.16-R0.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+}
+
+compileJava.options.encoding = 'UTF-8'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+javadoc {
+    options.encoding = 'UTF-8'
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+publishing {
+    publications {
+        shadow(MavenPublication) { publication ->
+            from components.java
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
