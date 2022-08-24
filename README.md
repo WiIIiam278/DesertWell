@@ -27,7 +27,7 @@ public class ExamplePlugin extends JavaPlugin {
                         AboutMenu.Credit.of("Contributor 1").withDescription("Code, refactoring")
                 .addAttribution("Translators",
                         AboutMenu.Credit.of("Translator 1").withDescription("Spanish (es-es)"),
-                        AboutMenu.Credit.of("Translator 1").withDescription("Italian (it-it)")
+                        AboutMenu.Credit.of("Translator 2").withDescription("Italian (it-it)")
                 .addButtons(
                         AboutMenu.Link.of("https://william278.net/").withText("Wesbite").withIcon("⛏"),
                         AboutMenu.Link.of("https://discord.gg/tVYhJfyDWG").withText("Discord").withIcon("⭐").withColor("#6773f5"))));
