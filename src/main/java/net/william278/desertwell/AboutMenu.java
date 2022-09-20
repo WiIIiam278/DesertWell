@@ -1,7 +1,7 @@
 package net.william278.desertwell;
 
-import de.themoep.minedown.MineDown;
-import de.themoep.minedown.Util;
+import de.themoep.minedown.adventure.MineDown;
+import de.themoep.minedown.adventure.Util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
