@@ -74,7 +74,7 @@ public class UpdateChecker {
      * @return A {@link CompletableFuture} containing true if the current plugin {@link Version} is outdated
      */
     public CompletableFuture<Boolean> isUpToDate() {
-        return getLatestVersion().thenApply(latestVersion -> currentVersion.compareTo(latestVersion) > 0);
+        return getLatestVersion().thenApply(latestVersion -> currentVersion.compareTo(latestVersion) >= 0);
     }
 
 }
