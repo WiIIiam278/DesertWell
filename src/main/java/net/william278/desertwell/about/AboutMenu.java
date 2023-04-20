@@ -63,7 +63,7 @@ public class AboutMenu {
     }
 
     @NotNull
-    private TextComponent asComponent() {
+    public TextComponent toComponent() {
         final TextComponent.Builder builder = Component.text()
                 .append(Component.newline())
                 .append(title.colorIfAbsent(themeColor).decorate(TextDecoration.BOLD));
