@@ -1,5 +1,6 @@
 package net.william278.desertwell;
 
+import net.william278.desertwell.util.Version;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -23,15 +24,15 @@ public class VersionTests {
     }
 
     @Test
-    public void testVersionComparingWithMetadata() {
-        final Version oldVersion = Version.fromString("1.0.0+dev");
-        final Version newVersion = Version.fromString("1.0.1+snapshot-123");
+    public void testVersionComparingWithMetaDelimiter() {
+        final Version oldVersion = Version.fromString("1.0.0+dev", "+");
+        final Version newVersion = Version.fromString("1.0.1+snapshot-123", "+");
         Assertions.assertTrue(oldVersion.compareTo(newVersion) < 0);
     }
 
     @Test
     public void testParsingMinecraftVersion() {
-        final Version version = Version.fromMinecraftVersionString("1.2.3-SNAPSHOT");
+        final Version version = Version.fromString("1.2.3-SNAPSHOT");
         Assertions.assertEquals(1, version.getMajor());
         Assertions.assertEquals(2, version.getMinor());
         Assertions.assertEquals(3, version.getPatch());

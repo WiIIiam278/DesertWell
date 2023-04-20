@@ -1,7 +1,9 @@
-package net.william278.desertwell;
+package net.william278.desertwell.about;
 
 import de.themoep.minedown.adventure.MineDown;
 import de.themoep.minedown.adventure.Util;
+import net.kyori.adventure.text.Component;
+import net.william278.desertwell.util.Version;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,89 +14,24 @@ import java.util.*;
  */
 @SuppressWarnings("unused")
 public class AboutMenu {
-    @NotNull
     private final String title;
-    @Nullable
-    private Version version;
-    @Nullable
-    private String description;
-    @NotNull
+    private final Version version;
+    private final String description;
     private final Map<String, List<Credit>> attributions;
-    @NotNull
     private final List<Link> buttons;
 
-    private AboutMenu() {
-        this.title = "";
-        this.buttons = new ArrayList<>();
-        this.attributions = new LinkedHashMap<>();
-    }
-
-    private AboutMenu(@NotNull String title) {
+    private AboutMenu(@NotNull String title, @Nullable Version version, @Nullable String description,
+                      @NotNull Map<String, List<Credit>> attributions, @NotNull List<Link> buttons) {
         this.title = title;
-        this.buttons = new ArrayList<>();
-        this.attributions = new LinkedHashMap<>();
-    }
-
-    /**
-     * Create an about menu
-     *
-     * @param title The title of the menu (resource title)
-     * @return The {@link AboutMenu}
-     */
-    @NotNull
-    public static AboutMenu create(@NotNull String title) {
-        return new AboutMenu(title);
-    }
-
-    /**
-     * Set the description of the resource to display on the menu
-     *
-     * @param description The resource description
-     * @return The {@link AboutMenu}
-     */
-    @NotNull
-    public AboutMenu withDescription(@Nullable String description) {
-        this.description = description;
-        return this;
-    }
-
-    /**
-     * Set the {@link Version} of the resource to display on the menu
-     *
-     * @param version The resource version
-     * @return The {@link AboutMenu}
-     */
-    @NotNull
-    public AboutMenu withVersion(@NotNull Version version) {
         this.version = version;
-        return this;
+        this.description = description;
+        this.attributions = attributions;
+        this.buttons = buttons;
     }
 
-    /**
-     * Add an attribution to the menu
-     *
-     * @param category The attribution category (e.g. {@code "Author"})
-     * @param credits  {@link Credit}s to add
-     * @return The {@link AboutMenu}
-     */
     @NotNull
-    public AboutMenu addAttribution(@NotNull String category, @NotNull Credit... credits) {
-        final List<Credit> creditList = new ArrayList<>(Arrays.asList(credits));
-        attributions.putIfAbsent(category, new ArrayList<>());
-        attributions.get(category).addAll(creditList);
-        return this;
-    }
-
-    /**
-     * Add linked buttons to the menu
-     *
-     * @param links {@link Link}s to add
-     * @return The {@link AboutMenu}
-     */
-    @NotNull
-    public AboutMenu addButtons(@NotNull Link... links) {
-        buttons.addAll(Arrays.asList(links));
-        return this;
+    public static Builder builder() {
+        return new Builder();
     }
 
     /**
@@ -103,7 +40,7 @@ public class AboutMenu {
      * @return The {@link MineDown} menu
      */
     @NotNull
-    public MineDown toMineDown() {
+    public MineDown asMineDown() {
         final StringJoiner menu = new StringJoiner("\n")
                 .add("[" + escapeMineDown(title) + "](#00fb9a bold)"
                      + (version != null ? " [| v" + escapeMineDown(version.toString()) + "](#00fb9a)" : ""));
@@ -141,14 +78,18 @@ public class AboutMenu {
         return new MineDown(menu.toString()).replace();
     }
 
+    @NotNull
+    public Component asComponent() {
+        return asMineDown().toComponent();
+    }
+
     /**
-     * Return the plaintext string formatted menu. Use this for displaying to console
+     * Return the plaintext string formatted menu.
      *
      * @return The plaintext menu as a string
      */
-    @Override
     @NotNull
-    public String toString() {
+    public String asString() {
         final StringJoiner menu = new StringJoiner("\n")
                 .add(title + (version != null ? " | Version " + version : ""));
         if (description != null) {
@@ -177,6 +118,121 @@ public class AboutMenu {
         }
 
         return menu.toString();
+    }
+
+    /**
+     * Escape a string from {@link MineDown} formatting for use in a MineDown-formatted locale
+     * <p>
+     * Although MineDown provides {@link MineDown#escape(String)}, that method fails to escape events
+     * properly when using the escaped string in a replacement, so this is used instead
+     *
+     * @param string The string to escape
+     * @return The escaped string
+     */
+    @NotNull
+    private static String escapeMineDown(@NotNull String string) {
+        final StringBuilder value = new StringBuilder();
+        for (int i = 0; i < string.length(); ++i) {
+            char c = string.charAt(i);
+            boolean isEscape = c == '\\';
+            boolean isColorCode = i + 1 < string.length() && (c == 167 || c == '&');
+            boolean isEvent = c == '[' || c == ']' || c == '(' || c == ')';
+            boolean isFormatting = (c == '_' || c == '*' || c == '~' || c == '?' || c == '#') && Util.isDouble(string, i);
+            if (isEscape || isColorCode || isEvent || isFormatting) {
+                value.append('\\');
+            }
+
+            value.append(c);
+        }
+        return value.toString();
+    }
+
+    public static class Builder {
+        private String title;
+        private Version version;
+        private String description;
+        private final Map<String, List<Credit>> attributions = new LinkedHashMap<>();
+        private final List<Link> buttons = new ArrayList<>();
+
+        private Builder() {
+        }
+
+        /**
+         * Set the title of the resource to display on the menu
+         *
+         * @param title The resource title
+         * @return The {@link Builder}
+         */
+        @NotNull
+        public Builder title(@NotNull String title) {
+            this.title = title;
+            return this;
+        }
+
+        /**
+         * Set the description of the resource to display on the menu
+         *
+         * @param description The resource description
+         * @return The {@link Builder}
+         */
+        @NotNull
+        public Builder description(@Nullable String description) {
+            this.description = description;
+            return this;
+        }
+
+        /**
+         * Set the {@link Version} of the resource to display on the menu
+         *
+         * @param version The resource version
+         * @return The {@link Builder}
+         */
+        @NotNull
+        public Builder version(@NotNull Version version) {
+            this.version = version;
+            return this;
+        }
+
+        /**
+         * Add an attribution to the menu
+         *
+         * @param category The attribution category (e.g. {@code "Author"})
+         * @param credits  {@link Credit}s to add
+         * @return The {@link Builder}
+         */
+        @NotNull
+        public Builder credits(@NotNull String category, @NotNull Credit... credits) {
+            final List<Credit> creditList = new ArrayList<>(Arrays.asList(credits));
+            attributions.putIfAbsent(category, new ArrayList<>());
+            attributions.get(category).addAll(creditList);
+            return this;
+        }
+
+        /**
+         * Add linked buttons to the menu
+         *
+         * @param links {@link Link}s to add
+         * @return The {@link Builder}
+         */
+        @NotNull
+        public Builder buttons(@NotNull Link... links) {
+            buttons.addAll(Arrays.asList(links));
+            return this;
+        }
+
+        /**
+         * Build the {@link AboutMenu}
+         *
+         * @return The {@link Builder}
+         */
+        @NotNull
+        public AboutMenu build() {
+            if (title == null) {
+                throw new IllegalStateException("Title must be set");
+            }
+            return new AboutMenu(title, version, description, attributions, buttons);
+        }
+
     }
 
     /**
@@ -274,7 +330,8 @@ public class AboutMenu {
          * @param description The description of the credit (what they did)
          * @return The {@link Credit}
          */
-        public Credit withDescription(@Nullable String description) {
+        @NotNull
+        public Credit description(@Nullable String description) {
             this.description = description;
             return this;
         }
@@ -285,7 +342,8 @@ public class AboutMenu {
          * @param url The URL of the credit (i.e. their website)
          * @return The {@link Credit}
          */
-        public Credit withUrl(@Nullable String url) {
+        @NotNull
+        public Credit url(@Nullable String url) {
             this.url = url;
             return this;
         }
@@ -296,38 +354,12 @@ public class AboutMenu {
          * @param color The color of the credit
          * @return The {@link Credit}
          */
-        public Credit withColor(@NotNull String color) {
+        @NotNull
+        public Credit color(@NotNull String color) {
             this.color = color;
             return this;
         }
 
-    }
-
-    /**
-     * Escape a string from {@link MineDown} formatting for use in a MineDown-formatted locale
-     * <p>
-     * Although MineDown provides {@link MineDown#escape(String)}, that method fails to escape events
-     * properly when using the escaped string in a replacement, so this is used instead
-     *
-     * @param string The string to escape
-     * @return The escaped string
-     */
-    @NotNull
-    private static String escapeMineDown(@NotNull String string) {
-        final StringBuilder value = new StringBuilder();
-        for (int i = 0; i < string.length(); ++i) {
-            char c = string.charAt(i);
-            boolean isEscape = c == '\\';
-            boolean isColorCode = i + 1 < string.length() && (c == 167 || c == '&');
-            boolean isEvent = c == '[' || c == ']' || c == '(' || c == ')';
-            boolean isFormatting = (c == '_' || c == '*' || c == '~' || c == '?' || c == '#') && Util.isDouble(string, i);
-            if (isEscape || isColorCode || isEvent || isFormatting) {
-                value.append('\\');
-            }
-
-            value.append(c);
-        }
-        return value.toString();
     }
 
 }

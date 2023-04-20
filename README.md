@@ -13,6 +13,9 @@ DesertWell is a simple library providing various utilities to aid Minecraft plug
 To create an about menu, use `AboutMenu#create(title)` with the resource name, then use the various builder methods to 
 build out the menu.
 
+<details>
+<summary>Code snippet</summary>
+
 ```java
 public class ExamplePlugin extends JavaPlugin {
 
@@ -41,11 +44,15 @@ public class ExamplePlugin extends JavaPlugin {
 
 }
 ```
+</details>
 
 ### Version
 `Version.class` provides a simple way to compare semantic plugin and Minecraft versions. `VersionChecker.class` provides 
 a utility for querying Spigot resources for the latest version of a plugin and comparing with the current version in
 order to check for updates.
+
+<details>
+<summary>Code snippet</summary>
 
 ```java
 public class ExamplePlugin extends JavaPlugin {
@@ -65,13 +72,16 @@ public class ExamplePlugin extends JavaPlugin {
 
 }
 ```
+</details>
 
 ## Installation
 DesertWell is available on JitPack. You can browse the Javadocs [here](https://javadoc.jitpack.io/net/william278/DesertWell/latest/javadoc/).
 
 Note that your plugin will also need to shade (or shade a library that includes) [MineDown](https://github.com/Phoenix616/MineDown).
 
-### Maven
+<details>
+<summary>Maven</summary>
+
 To include the library with Maven, in your `pom.xml` file, first add the JitPack repository:
 ```xml
     <repositories>
@@ -91,6 +101,7 @@ Then, add the dependency in your `<dependencies>` section. Remember to replace `
         <scope>compile</scope>
     </dependency>
 ```
+</details>
 
 ### Gradle & others
 JitPack has a [handy guide](https://jitpack.io/#net.william278/DesertWell/#How_to) for how to use the dependency with other build platforms.

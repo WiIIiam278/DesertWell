@@ -1,4 +1,4 @@
-package net.william278.desertwell;
+package net.william278.desertwell.util;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -11,9 +11,9 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings("unused")
 public class Version implements Comparable<Version> {
-    private final String VERSION_DELIMITER = ".";
-    private static final String MINECRAFT_META_DELIMITER = "-";
-    private static final String PLUGIN_META_DELIMITER = "+";
+    public final String VERSION_DELIMITER = ".";
+    public static final String META_DELIMITER = "-";
+
     // Major, minor and patch version numbers
     private int[] versions = new int[]{};
     @NotNull
@@ -46,23 +46,11 @@ public class Version implements Comparable<Version> {
      *
      * @param versionString The version string to parse
      * @return The {@link Version}
-     * @implNote The default meta delimiter that will be used is {@link #PLUGIN_META_DELIMITER}
+     * @implNote The default meta delimiter that will be used is {@link #META_DELIMITER}
      */
     @NotNull
     public static Version fromString(@NotNull String versionString) {
-        return new Version(versionString, PLUGIN_META_DELIMITER);
-    }
-
-    /**
-     * Create a new {@link Version} by parsing a Minecraft string
-     *
-     * @param versionString The Minecraft version string to parse
-     * @return The {@link Version}
-     * @implNote The  meta delimiter that will be used is {@link #MINECRAFT_META_DELIMITER}
-     */
-    @NotNull
-    public static Version fromMinecraftVersionString(@NotNull String versionString) {
-        return new Version(versionString, MINECRAFT_META_DELIMITER);
+        return new Version(versionString, META_DELIMITER);
     }
 
     /**
