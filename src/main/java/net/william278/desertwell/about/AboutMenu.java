@@ -1,8 +1,31 @@
+/*
+ * This file is part of DesertWell, licensed under the Apache License 2.0.
+ *
+ *  Copyright (c) William278 <will27528@gmail.com>
+ *  Copyright (c) contributors
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package net.william278.desertwell.about;
 
-import de.themoep.minedown.adventure.MineDown;
-import de.themoep.minedown.adventure.Util;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentBuilder;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.william278.desertwell.util.Version;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,17 +37,22 @@ import java.util.*;
  */
 @SuppressWarnings("unused")
 public class AboutMenu {
-    private final String title;
+    private final Component title;
+    private final Component description;
     private final Version version;
-    private final String description;
+    private final TextColor themeColor;
+    private final TextColor secondaryColor;
     private final Map<String, List<Credit>> attributions;
     private final List<Link> buttons;
 
-    private AboutMenu(@NotNull String title, @Nullable Version version, @Nullable String description,
+    private AboutMenu(@NotNull Component title, @Nullable Component description, @Nullable Version version,
+                      @NotNull TextColor themeColor, @NotNull TextColor secondaryColor,
                       @NotNull Map<String, List<Credit>> attributions, @NotNull List<Link> buttons) {
         this.title = title;
-        this.version = version;
         this.description = description;
+        this.version = version;
+        this.themeColor = themeColor;
+        this.secondaryColor = secondaryColor;
         this.attributions = attributions;
         this.buttons = buttons;
     }
@@ -34,123 +62,50 @@ public class AboutMenu {
         return new Builder();
     }
 
-    /**
-     * Return the formatted {@link MineDown} menu
-     *
-     * @return The {@link MineDown} menu
-     */
     @NotNull
-    public MineDown asMineDown() {
-        final StringJoiner menu = new StringJoiner("\n")
-                .add("[" + escapeMineDown(title) + "](#00fb9a bold)"
-                     + (version != null ? " [| v" + escapeMineDown(version.toString()) + "](#00fb9a)" : ""));
-        if (description != null) {
-            menu.add("[" + escapeMineDown(description) + "](gray)");
+    private TextComponent asComponent() {
+        final TextComponent.Builder builder = Component.text()
+                .append(Component.newline())
+                .append(title.colorIfAbsent(themeColor).decorate(TextDecoration.BOLD));
+        if (version != null) {
+            builder.append(Component.text(" | v" + version).color(themeColor));
         }
 
+        // Add description
+        if (description != null) {
+            builder.append(Component.newline()).append(description.colorIfAbsent(secondaryColor));
+        }
+
+        // Add attributions
         if (!attributions.isEmpty()) {
-            menu.add("");
+            builder.append(Component.newline());
         }
         for (Map.Entry<String, List<Credit>> entry : attributions.entrySet()) {
-            final StringJoiner creditJoiner = new StringJoiner(", ");
-            for (final Credit credit : entry.getValue()) {
-                creditJoiner.add("[" + credit.name + "](" + credit.color +
-                                 (credit.description != null ? " show_text=&7" + escapeMineDown(credit.description) : "") +
-                                 (credit.url != null ? " open_url=" + escapeMineDown(credit.url) : "")
-                                 + ")");
-            }
-
-            if (!creditJoiner.toString().isBlank()) {
-                menu.add("[• " + entry.getKey() + ":](white) " + creditJoiner);
-            }
+            builder.append(Component.newline())
+                    .append(Component.text("• " + entry.getKey() + ": ").color(NamedTextColor.WHITE));
+            entry.getValue().stream().map(Credit::toComponent).forEach(name -> builder
+                    .append(name)
+                    .append(Component.text(", ")));
         }
 
+        // Add buttons
         if (!buttons.isEmpty()) {
-            final StringJoiner buttonsJoiner = new StringJoiner("   ");
-            for (final Link link : buttons) {
-                buttonsJoiner.add("[[" + (link.icon != null ? link.icon + " " : "")
-                                  + escapeMineDown(link.text) + "…]](" + link.color + " "
-                                  + "show_text=&7Click to open link open_url=" + escapeMineDown(link.url) + ")");
-            }
-            menu.add("").add("[Links:](gray) " + buttonsJoiner);
+            builder.append(Component.newline())
+                    .append(Component.text("Links: ").color(secondaryColor));
+            buttons.stream().map(Link::toComponent).forEach(link -> builder
+                    .append(link)
+                    .append(Component.text("   ")));
         }
 
-        return new MineDown(menu.toString()).replace();
-    }
-
-    @NotNull
-    public Component asComponent() {
-        return asMineDown().toComponent();
-    }
-
-    /**
-     * Return the plaintext string formatted menu.
-     *
-     * @return The plaintext menu as a string
-     */
-    @NotNull
-    public String asString() {
-        final StringJoiner menu = new StringJoiner("\n")
-                .add(title + (version != null ? " | Version " + version : ""));
-        if (description != null) {
-            menu.add(description);
-        }
-
-        if (!attributions.entrySet().isEmpty()) {
-            menu.add("━━━━━━━━━━━━━━━━━━━━━━━━");
-        }
-        for (final Map.Entry<String, List<Credit>> entry : attributions.entrySet()) {
-            final StringJoiner creditJoiner = new StringJoiner(", ");
-            for (final Credit credit : entry.getValue()) {
-                creditJoiner.add(credit.name + (credit.description != null ? " (" + credit.description + ")" : ""));
-            }
-
-            if (!creditJoiner.toString().isBlank()) {
-                menu.add("- " + entry.getKey() + ": " + creditJoiner);
-            }
-        }
-
-        if (!buttons.isEmpty()) {
-            menu.add("━━━━━━━━━━━━━━━━━━━━━━━━");
-            for (final Link link : buttons) {
-                menu.add("- " + link.text + ": " + link.url);
-            }
-        }
-
-        return menu.toString();
-    }
-
-    /**
-     * Escape a string from {@link MineDown} formatting for use in a MineDown-formatted locale
-     * <p>
-     * Although MineDown provides {@link MineDown#escape(String)}, that method fails to escape events
-     * properly when using the escaped string in a replacement, so this is used instead
-     *
-     * @param string The string to escape
-     * @return The escaped string
-     */
-    @NotNull
-    private static String escapeMineDown(@NotNull String string) {
-        final StringBuilder value = new StringBuilder();
-        for (int i = 0; i < string.length(); ++i) {
-            char c = string.charAt(i);
-            boolean isEscape = c == '\\';
-            boolean isColorCode = i + 1 < string.length() && (c == 167 || c == '&');
-            boolean isEvent = c == '[' || c == ']' || c == '(' || c == ')';
-            boolean isFormatting = (c == '_' || c == '*' || c == '~' || c == '?' || c == '#') && Util.isDouble(string, i);
-            if (isEscape || isColorCode || isEvent || isFormatting) {
-                value.append('\\');
-            }
-
-            value.append(c);
-        }
-        return value.toString();
+        return builder.build();
     }
 
     public static class Builder {
-        private String title;
+        private Component title;
+        private Component description;
         private Version version;
-        private String description;
+        private TextColor themeColor = TextColor.color(0x00FB9A);
+        private TextColor secondaryColor = TextColor.color(0xAAAAAA);
         private final Map<String, List<Credit>> attributions = new LinkedHashMap<>();
         private final List<Link> buttons = new ArrayList<>();
 
@@ -164,7 +119,7 @@ public class AboutMenu {
          * @return The {@link Builder}
          */
         @NotNull
-        public Builder title(@NotNull String title) {
+        public Builder title(@NotNull Component title) {
             this.title = title;
             return this;
         }
@@ -176,8 +131,32 @@ public class AboutMenu {
          * @return The {@link Builder}
          */
         @NotNull
-        public Builder description(@Nullable String description) {
+        public Builder description(@Nullable Component description) {
             this.description = description;
+            return this;
+        }
+
+        /**
+         * Set the theme color of the resource to display on the menu
+         *
+         * @param themeColor The resource theme color
+         * @return The {@link Builder}
+         */
+        @NotNull
+        public Builder themeColor(@NotNull TextColor themeColor) {
+            this.themeColor = themeColor;
+            return this;
+        }
+
+        /**
+         * Set the secondary color of the resource to display on the menu
+         *
+         * @param secondaryColor The resource secondary color
+         * @return The {@link Builder}
+         */
+        @NotNull
+        public Builder secondaryColor(@NotNull TextColor secondaryColor) {
+            this.secondaryColor = secondaryColor;
             return this;
         }
 
@@ -230,7 +209,7 @@ public class AboutMenu {
             if (title == null) {
                 throw new IllegalStateException("Title must be set");
             }
-            return new AboutMenu(title, version, description, attributions, buttons);
+            return new AboutMenu(title, description, version, themeColor, secondaryColor, attributions, buttons);
         }
 
     }
@@ -239,14 +218,10 @@ public class AboutMenu {
      * Represents a link related to the resource
      */
     public static class Link {
-        @NotNull
         private String text = "Link";
-        @NotNull
-        private String color = "#00fb9a";
-        @Nullable
-        private String icon;
-        @NotNull
+        private TextColor color = TextColor.color(0x00fb9a);
         private final String url;
+        private String icon;
 
         private Link(@NotNull String url) {
             this.url = url;
@@ -268,7 +243,7 @@ public class AboutMenu {
          * @param text The text
          * @return The {@link Link}
          */
-        public Link withText(@NotNull String text) {
+        public Link text(@NotNull String text) {
             this.text = text;
             return this;
         }
@@ -279,7 +254,7 @@ public class AboutMenu {
          * @param icon The icon character
          * @return The {@link Link}
          */
-        public Link withIcon(@NotNull String icon) {
+        public Link icon(@NotNull String icon) {
             this.icon = icon;
             return this;
         }
@@ -290,9 +265,15 @@ public class AboutMenu {
          * @param color The color
          * @return The {@link Link}
          */
-        public Link withColor(@NotNull String color) {
+        public Link color(@NotNull TextColor color) {
             this.color = color;
             return this;
+        }
+
+        @NotNull
+        public Component toComponent() {
+            return Component.text((icon == null ? "" : icon) + " " + text, color)
+                    .clickEvent(ClickEvent.openUrl(url));
         }
 
     }
@@ -301,14 +282,12 @@ public class AboutMenu {
      * Represents information about someone who worked on the resource
      */
     public static class Credit {
-        @NotNull
         private final String name;
         @Nullable
         private String description;
         @Nullable
         private String url;
-        @NotNull
-        private String color = "gray";
+        private TextColor color = TextColor.color(0xAAAAAA);
 
         private Credit(@NotNull String name) {
             this.name = name;
@@ -320,6 +299,7 @@ public class AboutMenu {
          * @param name The name of the person to credit
          * @return The {@link Credit}
          */
+        @NotNull
         public static Credit of(@NotNull String name) {
             return new Credit(name);
         }
@@ -355,9 +335,21 @@ public class AboutMenu {
          * @return The {@link Credit}
          */
         @NotNull
-        public Credit color(@NotNull String color) {
+        public Credit color(@NotNull TextColor color) {
             this.color = color;
             return this;
+        }
+
+        @NotNull
+        public Component toComponent() {
+            final ComponentBuilder<TextComponent, TextComponent.Builder> builder = Component.text().content(name);
+            if (description != null) {
+                builder.append(Component.text(" (" + description + ")"));
+            }
+            if (url != null) {
+                builder.clickEvent(ClickEvent.openUrl(url));
+            }
+            return builder.color(color).build();
         }
 
     }
