@@ -90,7 +90,7 @@ public class AboutMenu {
 
         // Add buttons
         if (!buttons.isEmpty()) {
-            builder.append(Component.newline())
+            builder.append(Component.newline()).append(Component.newline())
                     .append(Component.text("Links: ").color(secondaryColor));
             buttons.stream().map(Link::toComponent).forEach(link -> builder
                     .append(link)
@@ -272,7 +272,7 @@ public class AboutMenu {
 
         @NotNull
         public Component toComponent() {
-            return Component.text((icon == null ? "" : icon) + " " + text, color)
+            return Component.text("[" + (icon == null ? "" : icon) + " " + text + "]", color)
                     .clickEvent(ClickEvent.openUrl(url));
         }
 
