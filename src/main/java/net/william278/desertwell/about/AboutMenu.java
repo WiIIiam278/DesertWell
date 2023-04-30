@@ -23,6 +23,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentBuilder;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -31,6 +32,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Utility for displaying a menu of information about a plugin
@@ -83,18 +85,28 @@ public class AboutMenu {
         for (Map.Entry<String, List<Credit>> entry : attributions.entrySet()) {
             builder.append(Component.newline())
                     .append(Component.text("• " + entry.getKey() + ": ").color(NamedTextColor.WHITE));
-            entry.getValue().stream().map(Credit::toComponent).forEach(name -> builder
-                    .append(name)
-                    .append(Component.text(", ")));
+
+            final AtomicInteger credits = new AtomicInteger();
+            entry.getValue().stream().map(Credit::toComponent).forEach(name -> {
+                if (credits.getAndIncrement() > 0) {
+                    builder.append(Component.text(", "));
+                }
+                builder.append(name).color(secondaryColor);
+            });
         }
 
         // Add buttons
         if (!buttons.isEmpty()) {
             builder.append(Component.newline()).append(Component.newline())
                     .append(Component.text("Links: ").color(secondaryColor));
-            buttons.stream().map(Link::toComponent).forEach(link -> builder
-                    .append(link)
-                    .append(Component.text("   ")));
+
+            final AtomicInteger links = new AtomicInteger();
+            buttons.stream().map(Link::toComponent).forEach(link -> {
+                if (links.getAndIncrement() > 0) {
+                    builder.append(Component.text("   "));
+                }
+                builder.append(link);
+            });
         }
 
         return builder.build();
@@ -344,7 +356,7 @@ public class AboutMenu {
         public Component toComponent() {
             final ComponentBuilder<TextComponent, TextComponent.Builder> builder = Component.text().content(name);
             if (description != null) {
-                builder.append(Component.text(" (" + description + ")"));
+                builder.hoverEvent(HoverEvent.showText(Component.text(description, color)));
             }
             if (url != null) {
                 builder.clickEvent(ClickEvent.openUrl(url));
