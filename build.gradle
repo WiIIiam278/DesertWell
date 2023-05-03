@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'net.william278'
-version '2.0.3'
+version '2.0.4'
 defaultTasks 'licenseFormat', 'build'
 
 repositories {
@@ -23,10 +23,16 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
 }
 
-compileJava.options.encoding = 'UTF-8'
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
+tasks {
+    compileJava {
+        options.encoding = 'UTF-8'
+        options.release.set(11)
+    }
+    jar {
+        manifest {
+            attributes('Automatic-Module-Name': 'net.william278.desertwell')
+        }
+    }
 }
 
 license {
