@@ -1,4 +1,5 @@
 # DesertWell
+![CI](https://img.shields.io/github/actions/workflow/status/WiIIiam278/DesertWell/ci.yml?branch=master&logo=github)
 [![Discord](https://img.shields.io/discord/818135932103557162?color=7289da&logo=discord)](https://discord.gg/tVYhJfyDWG)
 [![JitPack](https://jitpack.io/v/net.william278/DesertWell.svg)](https://jitpack.io/#net.william278/DesertWell)
 
