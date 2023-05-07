@@ -1,12 +1,13 @@
 plugins {
     id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'org.cadixdev.licenser' version '0.6.1'
+    id 'org.ajoberstar.grgit' version '5.2.0'
     id 'maven-publish'
     id 'java'
 }
 
 group 'net.william278'
-version '2.0.4'
+version "2.0.4${versionMetadata()}"
 defaultTasks 'licenseFormat', 'build'
 
 repositories {
@@ -102,4 +103,19 @@ publishing {
             }
         }
     }
+}
+
+@SuppressWarnings('GrMethodMayBeStatic')
+def versionMetadata() {
+    // Get if there is a tag for this commit
+    def tag = grgit.tag.list().find { it.commit.id == grgit.head().id }
+    if (tag != null) {
+        return ''
+    }
+
+    // Otherwise, get the last commit hash and if it's a clean head
+    if (grgit == null) {
+        return '-' + System.getenv("GITHUB_RUN_NUMBER") ? 'build.' + System.getenv("GITHUB_RUN_NUMBER") : 'unknown'
+    }
+    return '-' + grgit.head().abbreviatedId + (grgit.status().clean ? '' : '-indev')
 }
