@@ -86,14 +86,14 @@ DesertWell is available on JitPack and requires Adventure. You can browse the Ja
 First, add the JitPack repository to your `build.gradle`:
 ```groovy
 repositories {
-    maven { url 'https://jitpack.io' }
+    maven { url 'https://repo.william278.net/snapshots/' }
 }
 ```
 
 Then add the dependency:
 ```groovy
 dependencies {
-    implementation 'net.william278:PAPIProxyBridge:1.2'
+    implementation 'net.william278:desertwell:2.0.4-SNAPSHOT'
 }
 ```
 </details>
