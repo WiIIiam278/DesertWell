@@ -58,4 +58,12 @@ public class VersionTests {
         Assertions.assertEquals("SNAPSHOT", version.getMetadata());
     }
 
+    @Test
+    public void testParsingPaperVersion() {
+        final Version version = Version.fromString("1.2.3.build.123-stable");
+        Assertions.assertEquals(1, version.getMajor());
+        Assertions.assertEquals(2, version.getMinor());
+        Assertions.assertEquals(3, version.getPatch());
+        Assertions.assertEquals("build.123-stable", version.getMetadata());
+    }
 }

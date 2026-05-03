@@ -24,13 +24,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Utility for parsing and then comparing a semantic version string
  */
 @SuppressWarnings("unused")
 public class Version implements Comparable<Version> {
-    public final String VERSION_DELIMITER = ".";
+    public static final String VERSION_DELIMITER = ".";
     public static final String META_DELIMITER = "-";
 
     // Major, minor and patch version numbers
@@ -73,18 +74,41 @@ public class Version implements Comparable<Version> {
     }
 
     /**
+     * Splits a version string by the version delimiter
+     *
+     * @param version       The version string to parse
+     */
+    private String[] splitVersionString(@NotNull String version) {
+        return version.split(Pattern.quote(VERSION_DELIMITER));
+    }
+
+    /**
+     * Calculates the starting index of the metadata
+     *
+     * @param version       The version string to parse
+     * @param metaDelimiter The metadata delimiter
+     */
+    private int calculateMetaIndex(@NotNull String version, @NotNull String metaDelimiter) {
+        String[] versions = splitVersionString(version);
+        if (versions.length > 3) {
+            return Arrays.stream(versions).limit(3).collect(Collectors.joining(VERSION_DELIMITER)).length();
+        }
+        return version.indexOf(metaDelimiter);
+    }
+
+    /**
      * Parses a version string, including metadata, with the specified delimiter
      *
      * @param version       The version string to parse
      * @param metaDelimiter The metadata delimiter
      */
     private void parse(@NotNull String version, @NotNull String metaDelimiter) {
-        int metaIndex = version.indexOf(metaDelimiter);
+        int metaIndex = calculateMetaIndex(version, metaDelimiter);
         if (metaIndex > 0) {
             this.metadata = version.substring(metaIndex + 1);
             version = version.substring(0, metaIndex);
         }
-        String[] versions = version.split(Pattern.quote(VERSION_DELIMITER));
+        String[] versions = splitVersionString(version);
         this.versions = Arrays.stream(versions).mapToInt(Integer::parseInt).toArray();
     }
 
