@@ -30,6 +30,8 @@ tasks {
         options.release.set(11)
     }
     jar {
+        enabled = false
+        dependsOn(shadowJar { archiveClassifier = null })
         manifest {
             attributes('Automatic-Module-Name': 'net.william278.desertwell')
         }
@@ -46,8 +48,7 @@ logger.lifecycle("Building DesertWell ${version} by William278")
 version rootProject.version
 archivesBaseName = "${rootProject.name}"
 
-jar.dependsOn shadowJar
-clean.delete "$rootDir/target"
+clean.delete "$rootDir/build"
 
 javadoc {
     options.encoding = 'UTF-8'
