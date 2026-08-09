@@ -66,4 +66,29 @@ public class VersionTests {
         Assertions.assertEquals(3, version.getPatch());
         Assertions.assertEquals("build.123-stable", version.getMetadata());
     }
+
+    @Test
+    public void testVersionParsingWithoutPatch() {
+        final Version version = Version.fromString("1.2");
+        Assertions.assertEquals(1, version.getMajor());
+        Assertions.assertEquals(2, version.getMinor());
+        Assertions.assertEquals(0, version.getPatch());
+        Assertions.assertEquals("", version.getMetadata());
+    }
+
+    @Test
+    public void testParsingPaperVersionWithoutPatch() {
+        final Version version = Version.fromString("1.2.build.123-stable");
+        Assertions.assertEquals(1, version.getMajor());
+        Assertions.assertEquals(2, version.getMinor());
+        Assertions.assertEquals(0, version.getPatch());
+        Assertions.assertEquals("build.123-stable", version.getMetadata());
+    }
+
+    @Test
+    public void testComparingPaperVersions() {
+        final Version oldPaper = Version.fromString("1.2.build.99-stable");
+        final Version newPaper = Version.fromString("1.2.build.123-stable");
+        Assertions.assertEquals(0, oldPaper.compareTo(newPaper));
+    }
 }
