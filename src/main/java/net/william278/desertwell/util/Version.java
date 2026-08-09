@@ -90,7 +90,7 @@ public class Version implements Comparable<Version> {
     private void parse(@NotNull String version, @NotNull String metaDelimiter) {
         try {
             tryParseDelimitedVersion(version, metaDelimiter);
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
             tryParsePaperVersion(version);
         }
     }
