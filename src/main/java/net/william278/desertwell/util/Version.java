@@ -24,7 +24,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Utility for parsing and then comparing a semantic version string
@@ -83,33 +82,71 @@ public class Version implements Comparable<Version> {
     }
 
     /**
-     * Calculates the starting index of the metadata
-     *
-     * @param version       The version string to parse
-     * @param metaDelimiter The metadata delimiter
-     */
-    private int calculateMetaIndex(@NotNull String version, @NotNull String metaDelimiter) {
-        String[] versions = splitVersionString(version);
-        if (versions.length > 3) {
-            return Arrays.stream(versions).limit(3).collect(Collectors.joining(VERSION_DELIMITER)).length();
-        }
-        return version.indexOf(metaDelimiter);
-    }
-
-    /**
-     * Parses a version string, including metadata, with the specified delimiter
+     * Parses a version string, including metadata, with the specified delimiter.
      *
      * @param version       The version string to parse
      * @param metaDelimiter The metadata delimiter
      */
     private void parse(@NotNull String version, @NotNull String metaDelimiter) {
-        int metaIndex = calculateMetaIndex(version, metaDelimiter);
-        if (metaIndex > 0) {
-            this.metadata = version.substring(metaIndex + 1);
-            version = version.substring(0, metaIndex);
+        try {
+            tryParseDelimitedVersion(version, metaDelimiter);
+        } catch (Exception e) {
+            tryParsePaperVersion(version);
         }
-        String[] versions = splitVersionString(version);
-        this.versions = Arrays.stream(versions).mapToInt(Integer::parseInt).toArray();
+    }
+
+    /**
+     * Tries to parse a standard delimited version: {@code MAJOR.MINOR.PATCH[-METADATA]}.
+     * All dot-separated components before the meta delimiter must be valid integers.
+     */
+    private void tryParseDelimitedVersion(@NotNull String version, @NotNull String metaDelimiter) {
+        final int metaIndex = version.indexOf(metaDelimiter);
+        final String versionPart;
+        final String metadataPart;
+        if (metaIndex >= 0) {
+            versionPart = version.substring(0, metaIndex);
+            metadataPart = version.substring(metaIndex + 1);
+        } else {
+            versionPart = version;
+            metadataPart = "";
+        }
+        final String[] segments = splitVersionString(versionPart);
+        this.versions = Arrays.stream(segments).mapToInt(Integer::parseInt).toArray();
+        this.metadata = metadataPart;
+    }
+
+    /**
+     * Tries to parse a Paper-style version: {@code MAJOR.MINOR[.PATCH].build.NNN-STATUS}.
+     * Greedily collects leading integer segments; everything from the first non-integer
+     * segment onward is treated as metadata.
+     */
+    private void tryParsePaperVersion(@NotNull String version) {
+        final String[] segments = splitVersionString(version);
+        final int[] ints = new int[segments.length];
+        int count = 0;
+        for (String s : segments) {
+            final int val;
+            try {
+                val = Integer.parseInt(s);
+            } catch (NumberFormatException e) {
+                break;
+            }
+            ints[count++] = val;
+        }
+
+        // Build the version integer array
+        this.versions = Arrays.copyOf(ints, count);
+
+        // Everything after the last integer, joined by ".", is metadata
+        if (count < segments.length) {
+            final StringJoiner meta = new StringJoiner(VERSION_DELIMITER);
+            for (int i = count; i < segments.length; i++) {
+                meta.add(segments[i]);
+            }
+            this.metadata = meta.toString();
+        } else {
+            this.metadata = "";
+        }
     }
 
     /**
@@ -186,7 +223,7 @@ public class Version implements Comparable<Version> {
      * @return The patch version number.
      */
     public int getPatch() {
-        return this.versions[2];
+        return this.versions.length >= 3 ? this.versions[2] : 0;
     }
 
     /**
